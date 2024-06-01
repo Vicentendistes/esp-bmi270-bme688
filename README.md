@@ -1,44 +1,56 @@
-# Proyecto de Microcontroladores con ESP32 y Sensor Inercial BOSCH BMI270
+# Proyecto de Microcontroladores con ESP32, Sensor Inercial BOSCH BMI270 y Sensor Ambiental BOSCH BME688.
 
 ## Descripción
 
-Este proyecto consiste en la integración de un microcontrolador ESP32 con un sensor inercial BOSCH BMI270.
-
-Se establece una comunicación serial I2C entre el ESP32 y el sensor BMI270 para controlar su configuración y obtener mediciones. Estas mediciones se transmiten a un computador a través de una conexión serial UART, donde serán mostradas.
+Este proyecto consiste en la integración de un microcontrolador ESP32 con un sensor inercial BOSCH BMI270 y uno ambiental BOSCH BME688. Se establece una comunicación serial I2C entre el ESP32 y los sensores para controlar su configuración y obtener mediciones. Estas mediciones se transmiten a un computador a través de una conexión serial UART, donde serán mostradas en una interfaz gráfica de usuario (GUI) desarrollada con QT5.
 
 ## Características del Sensor Inercial (IMU) BMI270
 
-El sensor BMI270 tiene diferentes modos de poder que deben ser implementados:
+El sensor BMI270 tiene diferentes modos de poder, configuraciones y mediciones:
 
-- **Modo de bajo rendimiento**
-- **Modo de medio rendimiento**
-- **Modo de alto rendimiento**
-- **Modo de suspensión**
+- **Modos de poder:**
+  - Modo de bajo rendimiento
+  - Modo de medio rendimiento
+  - Modo de alto rendimiento
+  - Modo de suspensión
+- **Configuraciones adicionales:**
+  - Sensibilidad del giroscopio y acelerómetro: +/-2g, +/-4g, +/-8g, +/-16g
+  - Frecuencia de muestreo (ODR): 200Hz, 400Hz, 800Hz, 1600Hz
+- **Mediciones:**
+  - Aceleración (x, y, z)
+  - Velocidad angular (x, y, z)
+  - Transformada de Fourier (FFT) (x, y, z)
+  - RMS (Root Mean Square) (x, y, z)
+  - Últimos 5 picos (x, y, z)
 
-Adicionalmente, es necesario poder cambiar la configuración de sensibilidad y la frecuencia de muestreo (ODR) tanto para el giroscopio como para el acelerómetro del sensor.
+## Características del Sensor Ambiental BME688
 
-## Modo de Uso
+El sensor BME688 tiene diferentes modos de uso, configuraciones y mediciones:
 
-```
-=========== [Inputs válidos] ===========
-p1 : Suspend Power Mode
-p2 : Lower Power Mode
-p3 : Normal Power Mode
-p4 : Performance Power Mode
-s1 : Cambio a rango +/-2g
-s2 : Cambio a rango +/-4g
-s3 : Cambio a rango +/-8g
-s4 : Cambio a rango +/-16g
-a1 : Cambio frecuencia de muestreo 200Hz
-a2 : Cambio frecuencia de muestreo 400Hz
-a3 : Cambio frecuencia de muestreo 800Hz
-a4 : Cambio frecuencia de muestreo 1600Hz
-========================================
-```
+- **Modos de uso:**
+  - Modo Forzado
+  - Modo Paralelo
+  - Modo de Suspensión (Sleep)
+- **Mediciones:**
+  - Temperatura
+  - Humedad
+  - Presión
+  - CO (Calidad del aire)
+
+## Interfaz Gráfica de Usuario (GUI)
+
+La GUI se ha desarrollado utilizando la librería QT5 y cumple las siguientes funcionalidades:
+
+- Conectar la ESP32 con el sensor conectado (BMI270 o BME688).
+- Detectar automáticamente cuál sensor está conectado o permitir seleccionar manualmente a través de una lista desplegable.
+- Obtener y cambiar el modo de poder/funcionamiento del sensor conectado.
+- Obtener y cambiar la sensibilidad y la frecuencia de muestreo del sensor BMI270.
+- Recibir y visualizar en tiempo real todas las mediciones enviadas por los sensores, graficándolas en un plot dentro de la interfaz.
 
 ## Recursos
 
 - [Datasheet del BMI270](https://www.bosch-sensortec.com/products/motion-sensors/imus/bmi270/)
+- [Datasheet del BME688](https://www.bosch-sensortec.com/products/environmental-sensors/gas-sensors/bme688/)
 - [Documentación ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 
 ## Video Demostración
