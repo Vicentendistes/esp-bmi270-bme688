@@ -911,32 +911,45 @@ void change_sensitivity(int range) {
 }
 
 void check_inputs() {
-    char buffer[3];
-    int rLen = uart_read_bytes(UART_NUM, (uint8_t*)buffer, 3, pdMS_TO_TICKS(1000));
+    char buffer[4];
+    int rLen = uart_read_bytes(UART_NUM, (uint8_t*)buffer, 4, pdMS_TO_TICKS(1000));
     if (rLen == 0) return;
-    if (strcmp(buffer, "p1") == 0) {
+    
+    char power_mode[4];
+    sprintf(power_mode, "%d", buffer[0]);
+    char sensibility[4];
+    sprintf(sensibility, "%d", buffer[1]);
+    char odr[4];
+    sprintf(sensibility, "%d", buffer[2]);
+
+
+    if (strcmp(power_mode, "1") == 0) {
         suspendpowermode();
-    } else if (strcmp(buffer, "p2") == 0) {
+    } else if (strcmp(power_mode, "2") == 0) {
         lowpowermode();
-    } else if (strcmp(buffer, "p3") == 0) {
+    } else if (strcmp(power_mode, "3") == 0) {
         normalpowermode();
-    } else if (strcmp(buffer, "p4" ) == 0) {
+    } else if (strcmp(power_mode, "4" ) == 0) {
         performancepowermode();
-    } else if (strcmp(buffer, "s1" ) == 0) {
+    } 
+    
+    if (strcmp(sensibility, "1" ) == 0) {
         change_sensitivity(1);
-    } else if (strcmp(buffer, "s2" ) == 0) {
+    } else if (strcmp(sensibility, "2" ) == 0) {
         change_sensitivity(2);
-    } else if (strcmp(buffer, "s3" ) == 0) {
+    } else if (strcmp(sensibility, "3" ) == 0) {
         change_sensitivity(3);
-    } else if (strcmp(buffer, "s4" ) == 0) {
+    } else if (strcmp(sensibility, "4" ) == 0) {
         change_sensitivity(4);
-    } else if (strcmp(buffer, "a1" ) == 0) {
+    } 
+
+    if (strcmp(odr, "1" ) == 0) {
         change_odr_hyper(1);
-    } else if (strcmp(buffer, "a2" ) == 0) {
+    } else if (strcmp(odr, "2" ) == 0) {
         change_odr_hyper(2);
-    } else if (strcmp(buffer, "a3" ) == 0) {
+    } else if (strcmp(odr, "3" ) == 0) {
         change_odr_hyper(3);
-    } else if (strcmp(buffer, "a4" ) == 0) {
+    } else if (strcmp(odr, "4" ) == 0) {
         change_odr_hyper(4);
     }
 }
@@ -1043,17 +1056,21 @@ void lectura(void)
 }
 
 void handshake(){
-    char buffer[3];
+    char buffer[4];
+    buffer[4] = 0;
     while (1) {
         printf("BEGIN\n");
         int rLen = uart_read_bytes(UART_NUM, (uint8_t*)buffer, 3, pdMS_TO_TICKS(1000));
         {
             if (rLen > 0 && strcmp(buffer, "OK") == 0)
             {
+                printf("OK\n");
                 break;
             }
         }
     }
+    check_inputs();
+
 }
 
 void app_main(void)
@@ -1064,9 +1081,6 @@ void app_main(void)
     initialization();
     check_initialization();
     normalpowermode();
-    //lowpowermode();
-    // change_sensitivity();
-    // change_odr_hyper();
     internal_status();
     uart_setup();
     handshake();
