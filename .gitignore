@@ -2,3 +2,5 @@ build/*
 .devcontainer/*
 .vscode/*
 Ejemplo_GUI
+__pycache__/
+*.py[cod]

@@ -43,15 +43,15 @@ def i_gen():
     for cnt in itertools.count():
         yield cnt
 
-def init_connection(sensibility, odr, power_mode):
+def init_connection_bmi270(sensibility, odr, power_mode):
     step = 0
     while True:
         if ser.in_waiting > 0:
             response = ser.readline()
             parsed = str(response.decode()).replace("\r", "").replace("\n", "")
             if parsed == "BEGIN":
-                send_message("OK\0".encode())
                 if step == 0:
+                    send_message("OK\0".encode())
                     print("Conectando...")
                 step = 1
             elif step == 1 and parsed == "OK":
@@ -62,20 +62,43 @@ def init_connection(sensibility, odr, power_mode):
 
     send_message(f"{sensibility}{odr}{power_mode}\0".encode())
 
+def init_connection_bme688(mode):
+    step = 0
+    while True:
+        if ser.in_waiting > 0:
+            response = ser.readline()
+            parsed = str(response.decode()).replace("\r", "").replace("\n", "")
+            if parsed == "BEGIN":
+                if step == 0:
+                    send_message("OK\0".encode())
+                    print("Conectando...")
+                step = 1
+            elif step == 1 and parsed == "OK":
+                print("Conexión establecida")
+                break
+            else:
+                print("PARSED",parsed)
+    #send_message(f"{mode}\0".encode())
+
+def config_bmi270(sensibility, odr, power_mode):
+    send_message(f"{sensibility}{odr}{power_mode}\0".encode())
+
+def config_bme688(mode):
+    send_message(f"{mode}\0".encode())
 
 
-
-def init_receiver():
+def read_bmi270():
     if ser.in_waiting > 0:
         try:
             response = ser.readline()
+            # print("DATOS")
+            # print(response)
             if response.decode().strip("\r\n") == "ERROR":
-                pass
+                print("Modo suspensión")
+                return
             if response.decode().strip("\r\n") == "BEGIN":
                 pass
 
-            # print("DATOS")
-            # print(response)
 
             dataRows = response.decode().strip("; \r\n").split("; ")
 
@@ -102,6 +125,41 @@ def init_receiver():
 
             return new_accx, new_accy, new_accz, newRMSx, newRMSy, newRMSz, newFFTx, newFFTy, newFFTz, newPeaksx, newPeaksy, newPeaksz
 
+
+        except KeyboardInterrupt:
+            print('Finalizando comunicacion')
+            
+        """ except:
+            print('Error en leer mensaje') """
+
+
+def read_bme688():
+    if ser.in_waiting > 0:
+        try:
+            response = ser.readline()
+            #print("DATOS")
+            #print(response)
+            if response.decode().strip("\r\n") == "ERROR":
+                print("Modo suspensión")
+                return
+            if response.decode().strip("\r\n") == "BEGIN":
+                pass
+
+           
+        
+            dataRows = response.decode().strip("; \r\n").split("; ")
+            temp_data = dataRows[0]
+            humd_data = dataRows[1]
+            gas_res_data = dataRows[2]
+            pres_data = dataRows[3]
+
+            new_temp = [float(x) for x in temp_data.split(", ")]
+            new_humd = [float(y) for y in humd_data.split(", ")]
+            new_gas_res = [float(z) for z in gas_res_data.split(", ")]
+            new_pres = [float(w) for w in pres_data.split(", ")]
+
+
+            return new_temp, new_humd, new_gas_res, new_pres
 
         except KeyboardInterrupt:
             print('Finalizando comunicacion')

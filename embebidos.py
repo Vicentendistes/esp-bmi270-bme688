@@ -102,18 +102,36 @@ class Ui_Dialog(object):
     def onBMI270Select(self):
         self.label_31.show()
         self.selec_13.show()
+        self.label_3.show()
+        self.label_4.show()
+        self.label_5.show()
+        self.label_6.show()
+
         self.label_31b.hide()
         self.selec_13b.hide()
+        self.label_3b.hide()
+        self.label_4b.hide()
+        self.label_5b.hide()
+        self.label_6b.hide()
 
-    def onBMI688Select(self):
+    def onBME688Select(self):
         self.label_31.hide()
         self.selec_13.hide()
+        self.label_3.hide()
+        self.label_4.hide()
+        self.label_5.hide()
+        self.label_6.hide()
+
         self.label_31b.show()
         self.selec_13b.show()
+        self.label_3b.show()
+        self.label_4b.show()
+        self.label_5b.show()
+        self.label_6b.show()
 
 
 
-    def setupBMI688Ui(self, Dialog):
+    def setupBME688Ui(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         self.selec_13b = QtWidgets.QComboBox(Dialog)
         self.selec_13b.setGeometry(QtCore.QRect(360, 300, 181, 31))
@@ -121,8 +139,10 @@ class Ui_Dialog(object):
         self.selec_13b.setObjectName("selec_13")
         self.selec_13b.addItem("")
         self.selec_13b.addItem("")
-        self.selec_13b.setItemText(2, _translate("Dialog", "Forzado"))
-        self.selec_13b.setItemText(3, _translate("Dialog", "Paralelo"))
+        self.selec_13b.addItem("")
+        self.selec_13b.setItemText(0, _translate("Dialog", "Forzado"))
+        self.selec_13b.setItemText(1, _translate("Dialog", "Paralelo"))
+        self.selec_13b.setItemText(2, _translate("Dialog", "Suspensión (Sleep)"))
 
         self.label_31b = QtWidgets.QLabel(Dialog)
         self.label_31b.setGeometry(QtCore.QRect(390, 270, 121, 21))
@@ -202,7 +222,7 @@ class Ui_Dialog(object):
         self.setupAccUi(Dialog)
         self.setupGyroUi(Dialog)
         self.setupBMI270Ui(Dialog)
-        self.setupBMI688Ui(Dialog)
+        self.setupBME688Ui(Dialog)
 
         # Titulo conf sensor
         self.label_2 = QtWidgets.QLabel(Dialog)
@@ -221,6 +241,8 @@ class Ui_Dialog(object):
         self.curve11 = self.Plot1.plot(pen="b")
         self.curve12 = self.Plot1.plot(pen="r")
         self.curve13 = self.Plot1.plot(pen="g")
+        self.scatter1 = pg.ScatterPlotItem(size=10, brush=pg.mkBrush(30, 255, 35, 255))
+        self.Plot1.addItem(self.scatter1)
 
 
         self.Plot2 = pg.PlotWidget(Dialog)
@@ -231,6 +253,8 @@ class Ui_Dialog(object):
         self.curve21 = self.Plot2.plot(pen="b")
         self.curve22 = self.Plot2.plot(pen="r")
         self.curve23 = self.Plot2.plot(pen="g")
+        self.scatter2 = pg.ScatterPlotItem(size=10, brush=pg.mkBrush(255, 255, 35, 255))
+        self.Plot2.addItem(self.scatter2)
 
 
         self.Plot3 = pg.PlotWidget(Dialog)
@@ -241,6 +265,8 @@ class Ui_Dialog(object):
         self.curve31 = self.Plot3.plot(pen="b")
         self.curve32 = self.Plot3.plot(pen="r")
         self.curve33 = self.Plot3.plot(pen="g")
+        self.scatter3 = pg.ScatterPlotItem(size=10, brush=pg.mkBrush(32, 30, 255, 255))
+        self.Plot3.addItem(self.scatter3)
 
         
         self.Plot4 = pg.PlotWidget(Dialog)
@@ -251,6 +277,9 @@ class Ui_Dialog(object):
         self.curve41 = self.Plot4.plot(pen="b")
         self.curve42 = self.Plot4.plot(pen="r")
         self.curve43 = self.Plot4.plot(pen="g")
+        self.curve44 = self.Plot4.plot(pen="y")
+        self.scatter4 = pg.ScatterPlotItem(size=10, brush=pg.mkBrush(255, 30, 35, 255))
+        self.Plot4.addItem(self.scatter4)
 
 
         self.label_3 = QtWidgets.QLabel(Dialog)
@@ -259,24 +288,66 @@ class Ui_Dialog(object):
         self.label_3.setFrameShape(QtWidgets.QFrame.Box)
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
+        self.label_3.hide()
+        
+        self.label_3b = QtWidgets.QLabel(Dialog)
+        self.label_3b.setGeometry(QtCore.QRect(120, 390, 151, 21))
+        self.label_3b.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_3b.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_3b.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3b.setObjectName("label_3b")
+        self.label_3b.hide()
+
         self.label_4 = QtWidgets.QLabel(Dialog)
         self.label_4.setGeometry(QtCore.QRect(440, 390, 151, 21))
         self.label_4.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.label_4.setFrameShape(QtWidgets.QFrame.Box)
         self.label_4.setAlignment(QtCore.Qt.AlignCenter)
         self.label_4.setObjectName("label_4")
+        self.label_4.hide()
+
+        self.label_4b = QtWidgets.QLabel(Dialog)
+        self.label_4b.setGeometry(QtCore.QRect(440, 390, 151, 21))
+        self.label_4b.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_4b.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_4b.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4b.setObjectName("label_4b")
+        self.label_4b.hide()
+
+
         self.label_5 = QtWidgets.QLabel(Dialog)
         self.label_5.setGeometry(QtCore.QRect(120, 610, 151, 21))
         self.label_5.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.label_5.setFrameShape(QtWidgets.QFrame.Box)
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_5.setObjectName("label_5")
+        self.label_5.hide()
+
+        self.label_5b = QtWidgets.QLabel(Dialog)
+        self.label_5b.setGeometry(QtCore.QRect(120, 610, 151, 21))
+        self.label_5b.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_5b.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_5b.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_5b.setObjectName("label_5b")
+        self.label_5b.hide()
+
+
         self.label_6 = QtWidgets.QLabel(Dialog)
         self.label_6.setGeometry(QtCore.QRect(440, 610, 151, 21))
         self.label_6.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.label_6.setFrameShape(QtWidgets.QFrame.Box)
         self.label_6.setAlignment(QtCore.Qt.AlignCenter)
         self.label_6.setObjectName("label_6")
+        self.label_6.hide()
+
+        self.label_6b = QtWidgets.QLabel(Dialog)
+        self.label_6b.setGeometry(QtCore.QRect(440, 610, 151, 21))
+        self.label_6b.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_6b.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_6b.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_6b.setObjectName("label_6b")
+        self.label_6b.hide()
+
+
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(550, 160, 141, 31))
         self.pushButton.setObjectName("pushButton")
@@ -294,7 +365,7 @@ class Ui_Dialog(object):
             "Dialog", "<html><head/><body><p align=\"center\"><span style=\" text-decoration: underline;\">Sensor activo</span></p></body></html>"))
         self.selec_12.setItemText(0, _translate("Dialog", "<Ninguno>"))
         self.selec_12.setItemText(1, _translate("Dialog", "BMI270"))
-        self.selec_12.setItemText(2, _translate("Dialog", "BMI688"))
+        self.selec_12.setItemText(2, _translate("Dialog", "BME688"))
 
         self.label_2.setText(_translate("Dialog", "Configuracion \n"
                                         " Sensor"))
@@ -304,6 +375,12 @@ class Ui_Dialog(object):
         self.label_4.setText(_translate("Dialog", "Datos 2: RMS"))
         self.label_5.setText(_translate("Dialog", "Datos 3: FFT"))
         self.label_6.setText(_translate("Dialog", "Datos 4: Peaks"))
+
+        self.label_3b.setText(_translate("Dialog", "Datos 1: Temperatura"))
+        self.label_4b.setText(_translate("Dialog", "Datos 2: Humedad"))
+        self.label_5b.setText(_translate("Dialog", "Datos 3: CO"))
+        self.label_6b.setText(_translate("Dialog", "Datos 4: Presión"))
+
         self.pushButton.setText(_translate("Dialog", "Iniciar configuración"))
         self.pushButton_2.setText(_translate("Dialog", "Iniciar captación \n"
                                              " de datos"))

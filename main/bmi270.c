@@ -915,43 +915,24 @@ void check_inputs() {
     int rLen = uart_read_bytes(UART_NUM, (uint8_t*)buffer, 4, pdMS_TO_TICKS(1000));
     if (rLen == 0) return;
     
-    char power_mode[4];
-    sprintf(power_mode, "%d", buffer[0]);
-    char sensibility[4];
-    sprintf(sensibility, "%d", buffer[1]);
-    char odr[4];
-    sprintf(sensibility, "%d", buffer[2]);
+    int power_mode = buffer[2] - '0';
+    int sensibility = buffer[0] - '0';
+    int odr = buffer[1] - '0';
 
 
-    if (strcmp(power_mode, "1") == 0) {
+    if (power_mode == 1) {
         suspendpowermode();
-    } else if (strcmp(power_mode, "2") == 0) {
+    } else if (power_mode == 2) {
         lowpowermode();
-    } else if (strcmp(power_mode, "3") == 0) {
+    } else if (power_mode == 3) {
         normalpowermode();
-    } else if (strcmp(power_mode, "4" ) == 0) {
+    } else if (power_mode == 4) {
         performancepowermode();
-    } 
-    
-    if (strcmp(sensibility, "1" ) == 0) {
-        change_sensitivity(1);
-    } else if (strcmp(sensibility, "2" ) == 0) {
-        change_sensitivity(2);
-    } else if (strcmp(sensibility, "3" ) == 0) {
-        change_sensitivity(3);
-    } else if (strcmp(sensibility, "4" ) == 0) {
-        change_sensitivity(4);
-    } 
-
-    if (strcmp(odr, "1" ) == 0) {
-        change_odr_hyper(1);
-    } else if (strcmp(odr, "2" ) == 0) {
-        change_odr_hyper(2);
-    } else if (strcmp(odr, "3" ) == 0) {
-        change_odr_hyper(3);
-    } else if (strcmp(odr, "4" ) == 0) {
-        change_odr_hyper(4);
     }
+    
+    change_sensitivity(sensibility);
+
+    change_odr_hyper(odr);
 }
 
 void lectura(void)
