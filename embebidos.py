@@ -140,9 +140,9 @@ class Ui_Dialog(object):
         self.selec_13b.addItem("")
         self.selec_13b.addItem("")
         self.selec_13b.addItem("")
-        self.selec_13b.setItemText(0, _translate("Dialog", "Forzado"))
-        self.selec_13b.setItemText(1, _translate("Dialog", "Paralelo"))
-        self.selec_13b.setItemText(2, _translate("Dialog", "Suspensión (Sleep)"))
+        self.selec_13b.setItemText(0, _translate("Dialog", "Suspensión (Sleep)"))
+        self.selec_13b.setItemText(1, _translate("Dialog", "Forzado"))
+        self.selec_13b.setItemText(2, _translate("Dialog", "Paralelo"))
 
         self.label_31b = QtWidgets.QLabel(Dialog)
         self.label_31b.setGeometry(QtCore.QRect(390, 270, 121, 21))

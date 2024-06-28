@@ -403,6 +403,73 @@ void bme_forced_mode(void)
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 
+void bme_parallel_mode(void) {
+    uint8_t ctrl_hum = 0x72;
+    uint8_t ctrl_meas = 0x74;
+    uint8_t gas_wait_0 = 0x64;
+    uint8_t gas_wait_shared = 0x6E;
+    uint8_t res_heat_0 = 0x5A;
+    uint8_t ctrl_gas_1 = 0x71;
+
+    uint8_t mask;
+    uint8_t prev;
+    // Configuramos el oversampling (Datasheet[36])
+
+    // 1. osrs_h esta en ctrl_hum (LSB) -> seteamos 001 en bits 2:0
+    uint8_t osrs_h = 0b001;
+    mask = 0b00000111;
+    bme_i2c_read(I2C_NUM_0, &ctrl_hum, &prev, 1);
+    osrs_h = (prev & ~mask) | osrs_h;
+
+    // 2. osrs_t esta en ctrl_meas MSB -> seteamos 010 en bits 7:5
+    uint8_t osrs_t = 0b01000000;
+    // 3. osrs_p esta en ctrl_meas LSB -> seteamos 101 en bits 4:2 [Datasheet:37]
+    uint8_t osrs_p = 0b00010100;
+    uint8_t osrs_t_p = osrs_t | osrs_p;
+
+    // 4. edit filter<2:0> (no lo hacen)
+    // 5. set run_gas to 1
+    // 6. set nb_conv <3:0> 
+    // 7. set_gas_wait_shared<7:0> and set gas_wat_x <7:0>
+    // 8. set_res_heat_x <7:0>
+    // 9. set_mode<1:0> to 0b10
+
+     // 7. run_gas esta en ctrl_gas_1 -> seteamos bit 5
+    uint8_t nb_conv = 0b00000001;
+    uint8_t run_gas = 0b00100000;
+    uint8_t gas_conf = nb_conv | run_gas;
+
+    // 4. Seteamos gas_wait_0 a 100ms
+    uint8_t gas_duration = calc_gas_wait(100);
+
+    // 5. Seteamos res_heat_0
+    uint8_t heater_step = calc_res_heat(300);
+
+    
+    bme_i2c_write(I2C_NUM_0, &gas_wait_0, &gas_duration, 1);
+    bme_i2c_write(I2C_NUM_0, &res_heat_0, &heater_step, 1);
+    bme_i2c_write(I2C_NUM_0, &ctrl_hum, &osrs_h, 1);
+    bme_i2c_write(I2C_NUM_0, &ctrl_meas, &osrs_t_p, 1);
+    bme_i2c_write(I2C_NUM_0, &ctrl_gas_1, &gas_conf, 1);
+
+    uint8_t mode = 0b00000010;
+    uint8_t tmp_pow_mode;
+
+    ret = bme_i2c_read(I2C_NUM_0, &ctrl_meas, &tmp_pow_mode, 1);
+    tmp_pow_mode = (tmp_pow_mode & ~0x03) | mode;
+    ret = bme_i2c_write(I2C_NUM_0, &ctrl_meas, &tmp_pow_mode, 1);
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+}
+
+void bme_suspended_mode(void)
+{
+    uint8_t ctrl_meas = 0x74;
+    uint8_t tmp_pow_mode;
+    uint8_t pow_mode = 0;
+    ret = bme_i2c_read(I2C_NUM_0, &ctrl_meas, &tmp_pow_mode, 1);
+}
+
 int bme_check_forced_mode(void)
 {
     uint8_t ctrl_hum = 0x72;
@@ -679,78 +746,107 @@ void bme_read_data(void)
     uint8_t press;
     uint8_t forced_pres_addr[] = {0x1F, 0x20, 0x21};
 
-    int WINDOW = 128;
+    int WINDOW = 8;
     uint32_t temp_data[WINDOW];
     uint32_t hum_data[WINDOW];
     uint32_t gas_data[WINDOW];
     uint32_t press_data[WINDOW];
     int counter = 0;
 
-
-    for (;;)
-    {
-        uint32_t temp_adc = 0;
-        bme_forced_mode();
-        // Datasheet[41]
-        // https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme688-ds000.pdf#page=41
-        bme_i2c_read(I2C_NUM_0, &forced_temp_addr[0], &tmp, 1);
-        temp_adc = temp_adc | tmp << 12;
-        bme_i2c_read(I2C_NUM_0, &forced_temp_addr[1], &tmp, 1);
-        temp_adc = temp_adc | tmp << 4;
-        bme_i2c_read(I2C_NUM_0, &forced_temp_addr[2], &tmp, 1);
-        temp_adc = temp_adc | (tmp & 0xf0) >> 4;
-
-        uint32_t temp = bme_temp_celsius(temp_adc);
-        // printf("Temperatura: %f\n", (float)temp / 100);
-
-        uint32_t hum_adc = 0;
-        bme_i2c_read(I2C_NUM_0, &forced_hum_addr[0], &hum, 1);
-        hum_adc = hum_adc | hum << 8;
-        bme_i2c_read(I2C_NUM_0, &forced_hum_addr[1], &hum, 1);
-        hum_adc = hum_adc | hum;
-
-        uint32_t humd = bme_hum_rel(hum_adc, temp_adc);
-        // printf("Humedad: %f\n", (float)humd / 1000);
-
-        uint32_t gas_adc = 0;
-        bme_i2c_read(I2C_NUM_0, &gas_addr[0], &gas, 1);
-        gas_adc = gas_adc | gas << 2;
-        bme_i2c_read(I2C_NUM_0, &gas_addr[1], &gas, 1);
-        gas_adc = gas_adc | (gas & 0xc0) >> 6;
-
-        uint32_t gas_res_range = 0;
-        bme_i2c_read(I2C_NUM_0, &gas_range_addr[0], &gas_range, 1);
-        gas_res_range = gas_range;
-        float gas_res = (float)bme_res_rel(gas_adc, gas_res_range);
-        // printf("Resistencia %f\n", gas_res);
-
-        uint32_t press_adc = 0;
-        bme_i2c_read(I2C_NUM_0, &forced_pres_addr[0], &press, 1);
-        press_adc = press_adc | press << 12;
-        bme_i2c_read(I2C_NUM_0, &forced_pres_addr[1], &press, 1);
-        press_adc = press_adc | press << 4;
-        bme_i2c_read(I2C_NUM_0, &forced_pres_addr[2], &press, 1);
-        press_adc = press_adc | (press & 0xf0) >> 4;
-
-        uint32_t press = bme_press_pascal(press_adc, temp_adc);
-        // printf("Presion: %f\n\n", (float)press);
-
-        temp_data[counter] = temp;
-        hum_data[counter] = humd;
-        gas_data[counter] = gas_res;
-        press_data[counter] = press;
-
-        if (counter + 1 == WINDOW) {
+    //bme_parallel_mode();
+    int prev_mode = mode;
+    while (1) {
+        if (prev_mode == 0) {
+            vTaskDelay(pdMS_TO_TICKS(300));
             check_inputs();
-
-            data(temp_data, WINDOW, 0.01);
-            data(hum_data, WINDOW, 0.001);
-            data(gas_data, WINDOW, 1);
-            data(press_data, WINDOW, 1);
-            printf("\n");
+            if (mode != prev_mode) {
+                    prev_mode = mode;
+                    continue;
+                }
+            continue;
         }
-        counter = (counter + 1) % WINDOW;
+        if (prev_mode == 2) {
+            bme_parallel_mode();
+        }
+
+        for (;;)
+        {
+            uint32_t temp_adc = 0;
+            if (prev_mode == 1) {
+                bme_forced_mode();
+            } else if (prev_mode == 2) {
+                vTaskDelay(pdMS_TO_TICKS(300));
+            }
+            // Datasheet[41]
+            // https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme688-ds000.pdf#page=41
+            bme_i2c_read(I2C_NUM_0, &forced_temp_addr[0], &tmp, 1);
+            temp_adc = temp_adc | tmp << 12;
+            bme_i2c_read(I2C_NUM_0, &forced_temp_addr[1], &tmp, 1);
+            temp_adc = temp_adc | tmp << 4;
+            bme_i2c_read(I2C_NUM_0, &forced_temp_addr[2], &tmp, 1);
+            temp_adc = temp_adc | (tmp & 0xf0) >> 4;
+
+            uint32_t temp = bme_temp_celsius(temp_adc);
+            // printf("Temperatura: %f\n", (float)temp / 100);
+
+            uint32_t press_adc = 0;
+            bme_i2c_read(I2C_NUM_0, &forced_pres_addr[0], &press, 1);
+            press_adc = press_adc | press << 12;
+            bme_i2c_read(I2C_NUM_0, &forced_pres_addr[1], &press, 1);
+            press_adc = press_adc | press << 4;
+            bme_i2c_read(I2C_NUM_0, &forced_pres_addr[2], &press, 1);
+            press_adc = press_adc | (press & 0xf0) >> 4;
+
+            uint32_t press = bme_press_pascal(press_adc, temp_adc);
+            // printf("Presion: %f\n\n", (float)press);
+
+            uint32_t hum_adc = 0;
+            bme_i2c_read(I2C_NUM_0, &forced_hum_addr[0], &hum, 1);
+            hum_adc = hum_adc | hum << 8;
+            bme_i2c_read(I2C_NUM_0, &forced_hum_addr[1], &hum, 1);
+            hum_adc = hum_adc | hum;
+
+            uint32_t humd = bme_hum_rel(hum_adc, temp_adc);
+            // printf("Humedad: %f\n", (float)humd / 1000);
+
+            uint32_t gas_adc = 0;
+            bme_i2c_read(I2C_NUM_0, &gas_addr[0], &gas, 1);
+            gas_adc = gas_adc | gas << 2;
+            bme_i2c_read(I2C_NUM_0, &gas_addr[1], &gas, 1);
+            gas_adc = gas_adc | (gas & 0xc0) >> 6;
+
+            uint32_t gas_res_range = 0;
+            bme_i2c_read(I2C_NUM_0, &gas_range_addr[0], &gas_range, 1);
+            gas_res_range = gas_range;
+            float gas_res = (float)bme_res_rel(gas_adc, gas_res_range);
+            // printf("Resistencia %f\n", gas_res);
+
+            
+
+            temp_data[counter] = temp;
+            hum_data[counter] = humd;
+            gas_data[counter] = gas_res;
+            press_data[counter] = press;
+
+            if (counter + 1 == WINDOW) {
+                check_inputs();
+
+                data(temp_data, WINDOW, 0.01);
+                data(hum_data, WINDOW, 0.001);
+                data(gas_data, WINDOW, 1);
+                data(press_data, WINDOW, 1);
+                printf("\n");
+
+                if (mode != prev_mode) {
+                    prev_mode = mode;
+                    break;
+                }
+            }
+            counter = (counter + 1) % WINDOW;
+        }
     }
+    
+
 }
 
 void handshake()
@@ -769,7 +865,7 @@ void handshake()
             }
         }
     }
-    // check_inputs();
+    check_inputs();
 }
 
 void app_main(void)

@@ -78,7 +78,7 @@ def init_connection_bme688(mode):
                 break
             else:
                 print("PARSED",parsed)
-    #send_message(f"{mode}\0".encode())
+    send_message(f"{mode}\0".encode())
 
 def config_bmi270(sensibility, odr, power_mode):
     send_message(f"{sensibility}{odr}{power_mode}\0".encode())

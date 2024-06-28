@@ -56,11 +56,16 @@ class Controller:
         
         self.conf['AccSamp'] = self.ui.comboBox_acc_sampling.currentIndex()+1
         self.conf['AccSen'] = self.ui.text_acc_sensibity.currentIndex()+1
-        self.conf['Modo'] = self.ui.selec_13.currentIndex()+1
+        if self.leerModoOperacion() == 'BMI270':
+            self.conf['Modo'] = self.ui.selec_13.currentIndex()+1
+        else:
+            self.conf['Modo'] = self.ui.selec_13b.currentIndex()
         
         if self.running:
+            print("running")
             self.hasConfChanged = True
         elif self.connected:
+            print("connected")
             if self.leerModoOperacion() == 'BMI270':
                 re.config_bmi270(self.conf['AccSen'], self.conf['AccSamp'], self.conf['Modo'])
                 print(self.conf)
@@ -89,8 +94,8 @@ class Controller:
             self.ui.onBMI270Select()
         else:
             self.ui.onBME688Select()
-
-        return texto    
+        return texto
+        
         
 
     def criticalError(self):
@@ -277,6 +282,7 @@ class Controller:
         return peaks
             
     def readData(self):
+        prev_mode = self.conf['Modo']
         try:
             QtWidgets.QApplication.processEvents()
             while self.running:
@@ -287,11 +293,21 @@ class Controller:
                         re.config_bmi270(self.conf['AccSen'], self.conf['AccSamp'], self.conf['Modo'])
                         self.hasConfChanged = False
                 elif self.leerModoOperacion() == 'BME688':
+                    #print(prev_mode)
+                    if prev_mode == 0:
+                        if self.hasConfChanged:
+                            print("Cambio de mode")
+                            re.config_bme688(self.conf['Modo'])
+                            self.hasConfChanged = False
+                            print('Nuevo modo', self.conf['Modo'])
+                            prev_mode = self.conf['Modo']
+                        continue
                     data = re.read_bme688()
                     if self.hasConfChanged:
                         print(self.conf)
                         re.config_bme688(self.conf['Modo'])
                         self.hasConfChanged = False
+                    prev_mode = self.conf['Modo']
                                   
                 if data is None:
                     continue
