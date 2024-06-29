@@ -55,4 +55,4 @@ La GUI se ha desarrollado utilizando la librería QT5 y cumple las siguientes fu
 
 ## Video Demostración
 
-Para una demostración visual del proyecto, ver el siguiente video: [Video Demostración](https://youtu.be/ibvGQPzwFDM?si=VdsOHDcw-h0leEQ3)
+Para una demostración visual del proyecto, ver el siguiente video: [Video Demostración](https://youtu.be/tTdplMQtxio)
