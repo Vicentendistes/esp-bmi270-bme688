@@ -746,7 +746,7 @@ void bme_read_data(void)
     uint8_t press;
     uint8_t forced_pres_addr[] = {0x1F, 0x20, 0x21};
 
-    int WINDOW = 8;
+    int WINDOW = 30;
     uint32_t temp_data[WINDOW];
     uint32_t hum_data[WINDOW];
     uint32_t gas_data[WINDOW];

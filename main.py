@@ -54,8 +54,8 @@ class Controller:
 
     def leerConfiguracion(self):
         
-        self.conf['AccSamp'] = self.ui.comboBox_acc_sampling.currentIndex()+1
-        self.conf['AccSen'] = self.ui.text_acc_sensibity.currentIndex()+1
+        self.conf['AccSamp'] = self.ui.text_acc_sensibity.currentIndex()+1
+        self.conf['AccSen'] = self.ui.comboBox_acc_sampling.currentIndex()+1
         if self.leerModoOperacion() == 'BMI270':
             self.conf['Modo'] = self.ui.selec_13.currentIndex()+1
         else:
@@ -308,7 +308,7 @@ class Controller:
                         re.config_bme688(self.conf['Modo'])
                         self.hasConfChanged = False
                     prev_mode = self.conf['Modo']
-                                  
+                                    
                 if data is None:
                     continue
                 self.q.put(data)
